@@ -1,0 +1,284 @@
+syntax = "proto3";
+
+package dd4.turnstr;
+
+option java_package = "com.digitald4.turnstr.proto";
+option java_outer_classname = "Turnstr";
+
+message PasswordInfo {
+  string password_digest = 1;
+  string password_reset_token = 2;
+  int64 password_reset_sent_at = 3;
+}
+
+message Admin {
+  int32 id = 1;
+  string email = 2;
+  PasswordInfo password_info = 3;
+  string name = 4;
+  string phone = 5;
+}
+
+enum ContentType {
+  CT_UNSPECIFIED = 0; // Should not be used.
+  CT_STORY = 1;
+  CT_LIVE_VIDEO = 2;
+  CT_COMMENT = 3;
+}
+
+enum ContentState {
+  CONTENT_STATE_UNSPECIFIED = 0;
+  CONTENT_STATE_DELETED = 1;
+  CONTENT_STATE_ABUSE_VIOLATION = 2;
+  CONTENT_STATE_PRIVATE = 3;
+  CONTENT_STATE_DRAFT = 4;
+  CONTENT_STATE_FAMILY_VISIBLE = 5;
+  CONTENT_STATE_FOLLOWER_VISIBLE = 6;
+  CONTENT_STATE_PUBLIC_VISIBLE = 7;
+}
+
+enum Visibility {
+  VISIBILITY_UNSPECIFIED = 0; // Should not be used.
+  VISIBILITY_PRIVATE = 3;
+  VISIBILITY_DRAFT = 4;
+  VISIBILITY_FAMILY = 5;
+  VISIBILITY_FOLLOWER = 6;
+  VISIBILITY_PUBLIC = 7;
+}
+
+enum AbuseType {
+  ABUSE_TYPE_UNSPECIFIED = 0;
+  ABUSE_TYPE_SEXUAL_CONTENT = 1;
+  ABUSE_TYPE_COPY_RIGHT_VIOLATION = 2;
+  ABUSE_TYPE_ADVERTISEMENT = 3;
+  ABUSE_TYPE_SCAM = 4;
+  ABUSE_TYPE_VIOLANCE = 5;
+  ABUSE_TYPE_HATEFUL = 6;
+  ABUSE_TYPE_OTHER = 7;
+}
+
+message Comment {
+  int64 id = 1;
+  int64 user_id = 2;
+  ContentType content_type = 3;
+  int64 content_id = 4;
+  int64 reply_to_comment_id = 5;
+  string body = 6;
+  ContentState state = 7;
+  AbuseType abuse_type = 8;
+  int64 created_at = 10;
+  int64 updated_at = 11;
+  int64 deleted_at = 12;
+}
+
+message ContentActivity {
+  int64 id = 1;
+  int64 user_id = 2;
+  ContentType content_type = 3;
+  int64 content_id = 4;
+  oneof activity {
+    bool viewed = 10;
+    bool liked = 11;
+    bool disliked = 12;
+    bool favorite = 13;
+    AbuseType abuse_report = 14;
+  }
+  int64 created_at = 5;
+  int64 updated_at = 6;
+}
+
+message Favorite {
+  int64 id = 1;
+  int64 user_id = 2;
+  int64 favorite_user_id = 3;
+  int64 created_at = 4;
+  int64 updated_at = 5;
+}
+
+message LiveVideo {
+  int64 id = 1;
+  int64 user_id = 2;
+  string opentok_id = 3;
+  string event = 4;
+  int64 opentok_created_at = 5;
+  int32 duration = 6;
+  int64 partner_id = 7;
+  string reason = 8;
+  string opentok_session_id = 9;
+  int32 size = 10;
+  enum GoLiveStatus {
+    GL_STATUS_UNSPECIFIED = 0;
+    GL_STATUS_ACTIVE = 1;
+    GL_STATUS_CONCLUDED = 2;
+  }
+  ContentState state = 11;
+  Visibility visibility = 12;
+  string url = 13;
+  string thumb_url = 14;
+
+  // The type of abuse this story violated.
+  AbuseType abuse_type = 15;
+
+  // Counts of various content activities.
+  // The key is the ContentActivity.Type enum name since enums can't be used as a key and they
+  // are passed as the name in json.
+  map<string, int64> activity_count = 16;
+  int64 created_at = 17;
+  int64 updated_at = 18;
+  int64 deleted_at = 19;
+}
+
+message LiveSession {
+  int64 id = 1;
+  string session_id = 2;
+  bool completed = 3;
+  string token = 4;
+  string session_type = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+}
+
+message Relationship {
+  int64 id = 1;
+  int64 follower_id = 2;
+  int64 followed_id = 3;
+  int64 created_at = 4;
+  int64 updated_at = 5;
+}
+
+message RPushApps {
+  int64 id = 1;
+  string name = 2;
+  string environment = 3;
+  string certificate = 4;
+  string password = 5;
+  int32 connections = 6;
+  string type = 7;
+  string auth_key = 8;
+  string client_id = 9;
+  string client_secret = 10;
+  int64 access_token = 11;
+  int64 access_token_expiration = 12;
+  int64 created_at = 13;
+  int64 updated_at = 14;
+}
+
+message RPushFeedback {
+  int64 id = 1;
+  int64 app_id = 2;
+  string device_token = 3;
+  int64 failed_at = 4;
+  int64 created_at = 5;
+  int64 updated_at = 6;
+}
+
+message RPushNotification {
+  int64 id = 1;
+  int64 badge = 2;
+  string device_token = 3;
+  string sound = 4;
+  string alert = 5;
+  string data = 6;
+  int32 expiry = 7;
+  bool delivered = 8;
+  int64 delivered_at = 9;
+  bool failed = 10;
+  int64 failed_at = 11;
+  int32 error_code = 12;
+  string error_description = 13;
+  int64 deliver_after = 14;
+  bool alert_is_json = 15;
+  string type = 16;
+  string collapse_key = 17;
+  bool delay_while_idle = 18;
+  repeated int64 registration_id = 19;
+  int64 app_id = 20;
+  int32 retries = 21;
+  string uri = 22;
+  int64 fail_after = 23;
+  bool processing = 24;
+  int32 priority = 25;
+  string url_args = 26;
+  string category = 27;
+  bool content_available = 28;
+  string notification = 29;
+  bool mutable_content = 30;
+  int64 created_at = 31;
+  int64 updated_at = 32;
+}
+
+message Story {
+  int64 id = 1;
+  int64 user_id = 2;
+  string caption = 3;
+  ContentState state = 4;
+  Visibility visibility = 5;
+  message File {
+    string file_name = 1;
+    string content_type = 2;
+    int32 file_size = 3;
+    int64 created_at = 4;
+    int64 updated_at = 5;
+  }
+  message Face {
+    File media = 1;
+    File thumb = 2;
+  }
+  repeated Face face = 6;
+
+  // The type of abuse this story violated.
+  AbuseType abuse_type = 7;
+
+  // Counts of various content activities.
+  // The key is the ContentActivity.Type enum name since enums can't be used as a key and they
+  // are passed as the name in json.
+  map<string, int64> activity_count = 8;
+  int64 created_at = 10;
+  int64 updated_at = 11;
+  int64 deleted_at = 12;
+}
+
+message User {
+  int64 id = 1;
+  string email = 2;
+  string username = 3;
+  PasswordInfo password_info = 4;
+  string first_name = 5;
+  string last_name = 6;
+  string phone = 7;
+  Story avatar = 8;
+  string website = 9;
+  string bio = 10;
+  string gender = 11;
+  string remember_token = 12;
+  // Address address = 13;
+  int64 post_count = 14;
+  int64 following_count = 15;
+  int64 follower_count = 16;
+  int64 family_count = 17;
+  string info = 18;
+  string contact_me = 19;
+  bool online = 20;
+  bool is_verified = 21;
+  bool is_active = 22;
+  string role = 23;
+  string fb_token = 24;
+  string fb_user_id = 25;
+  int64 last_login = 26;
+  int64 created_at = 27;
+  int64 updated_at = 28;
+  int64 deleted_at = 29;
+}
+
+message UserDevice {
+  int64 id = 1;
+  int64 user_id = 2;
+  string device_udid = 3;
+  string device_push_token = 4;
+  string device_name = 5;
+  string device_os = 6;
+  string voip_token = 7;
+  string session_id = 8;
+  int64 created_at = 10;
+  int64 updated_at = 11;
+}

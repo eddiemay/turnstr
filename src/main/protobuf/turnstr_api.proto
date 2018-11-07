@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+package dd4.turnstr_ui;
+
+option java_package = "com.digitald4.turnstr.proto";
+option java_outer_classname = "TurnstrApi";
