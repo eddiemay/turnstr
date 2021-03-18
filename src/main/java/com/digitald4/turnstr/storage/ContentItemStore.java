@@ -31,9 +31,9 @@ public class ContentItemStore {
 		this.clock = clock;
 	}
 
-	public <T extends Message> ContentItem<T> create(ContentItem<T> contentItem) {
+	public <T extends ContentItem> T create(T contentItem) {
 		long millis = clock.millis();
-		return get(dao.create(contentItem.setCreatedAt(millis).setUpdatedAt(millis).getProto()));
+		return (T) ContentItem.convert(dao.create(contentItem.setCreatedAt(millis).setUpdatedAt(millis).getProto()));
 	}
 
 	public ContentItem<?> getWithAccessCheck(ContentType contentType, long itemId) {
@@ -61,19 +61,20 @@ public class ContentItemStore {
 		if (t == null) {
 			throw new DD4StorageException("Not found", 404);
 		}
-		return get(t);
+		return ContentItem.convert(t);
 	}
 
 	public <T extends Message> QueryResult<ContentItem<T>> list(Class<T> cls, Query query) {
 		QueryResult<T> queryResult = dao.list(cls, query);
 		return new QueryResult<>(queryResult.getResults()
 				.stream()
-				.map(this::get)
+				.map(ContentItem::convert)
 				.collect(Collectors.toList()), queryResult.getTotalSize());
 	}
 
 	public <T extends Message> ContentItem<T> update(Class<T> cls, long itemId, UnaryOperator<ContentItem<T>> updater) {
-		return get(dao.update(cls, itemId, current -> updater.apply(get(current)).getProto()));
+		return ContentItem.convert(
+		    dao.update(cls, itemId, current -> updater.apply(ContentItem.convert(current)).getProto()));
 	}
 
 	public <T extends Message> void softDelete(Class<T> cls, long itemId) {
@@ -93,7 +94,7 @@ public class ContentItemStore {
 		return ContentState.CONTENT_STATE_PUBLIC_VISIBLE;
 	}
 
-	private <T extends Message> ContentItem<T> checkAccess(ContentItem<T> contentItem) {
+	private <T extends ContentItem> T checkAccess(T contentItem) {
 		TurnstrUser user = userProvider.get();
 		if (contentItem.getState().getNumber() < getMinimumContentState(user, contentItem.getUserId()).getNumber()) {
 			if (user == null) {
@@ -102,14 +103,5 @@ public class ContentItemStore {
 			throw new DD4StorageException("Not found", HttpServletResponse.SC_NOT_FOUND);
 		}
 		return contentItem;
-	}
-
-	private <T extends Message> ContentItem<T> get(T item) {
-		if (item instanceof Turnstr.Story) {
-			return (ContentItem<T>) new Story((Turnstr.Story) item);
-		} else if (item instanceof Turnstr.LiveVideo) {
-			return (ContentItem<T>) new LiveVideo((Turnstr.LiveVideo) item);
-		}
-		return null;
 	}
 }

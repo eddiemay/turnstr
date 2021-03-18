@@ -88,7 +88,7 @@ public class Story implements ContentItem<Turnstr.Story> {
 	}
 
 	@Override
-	public Story setProto(Turnstr.Story  proto) {
+	public Story setProto(Turnstr.Story proto) {
 		this.proto = proto;
 		return this;
 	}

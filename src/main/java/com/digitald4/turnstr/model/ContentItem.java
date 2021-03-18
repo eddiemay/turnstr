@@ -1,13 +1,85 @@
 package com.digitald4.turnstr.model;
 
 import com.digitald4.common.exception.DD4StorageException;
+import com.digitald4.turnstr.proto.Turnstr;
 import com.digitald4.turnstr.proto.Turnstr.AbuseType;
 import com.digitald4.turnstr.proto.Turnstr.ContentState;
 import com.digitald4.turnstr.proto.Turnstr.ContentType;
 import com.digitald4.turnstr.proto.Turnstr.Visibility;
-import javax.servlet.http.HttpServletResponse;
+import com.google.protobuf.Message;
 
-public interface ContentItem<T> {
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+public interface ContentItem<T extends Message> {
+
+	enum ContentEnum {
+		STORY(ContentType.CT_STORY, Story.class, Turnstr.Story.class),
+		LIVE_VIDEO(ContentType.CT_LIVE_VIDEO, LiveVideo.class, Turnstr.LiveVideo.class);
+
+		private ContentType contentType;
+		private Class<? extends ContentItem> contentItemCls;
+		private Class<? extends Message> protoCls;
+
+		<C extends ContentItem, P extends Message> ContentEnum(
+				ContentType contentType,
+				Class<C> contentItemCls,
+				Class<P> protoCls) {
+			this.contentType = contentType;
+			this.contentItemCls = contentItemCls;
+			this.protoCls = protoCls;
+		}
+
+		public ContentType getContentType() {
+			return contentType;
+		}
+
+		public Class<? extends ContentItem> getContentItemCls() {
+			return contentItemCls;
+		}
+
+		public Class<? extends Message> getProtoCls() {
+			return protoCls;
+		}
+	}
+
+	Map<ContentType, ContentEnum> byContentType = Arrays.stream(ContentEnum.values())
+			.collect(Collectors.toMap(ContentEnum::getContentType, Function.identity()));
+
+	Map<Class<? extends ContentItem>, ContentEnum> byContentItemCls = Arrays.stream(ContentEnum.values())
+			.collect(Collectors.toMap(ContentEnum::getContentItemCls, Function.identity()));
+
+	Map<Class<? extends Message>, ContentEnum> byProtoCls = Arrays.stream(ContentEnum.values())
+			.collect(Collectors.toMap(ContentEnum::getProtoCls, Function.identity()));
+
+	static ContentEnum getContentEnum(Class<? extends ContentItem> contentItemCls) {
+		ContentEnum contentEnum = byContentItemCls.get(contentItemCls);
+		if (contentEnum == null) {
+			throw new DD4StorageException(
+					"No content type for: " + contentItemCls, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+		return contentEnum;
+	}
+
+	static ContentEnum getContentEnum(Message proto) {
+		ContentEnum contentEnum = byProtoCls.get(proto.getClass());
+		if (contentEnum == null) {
+			throw new DD4StorageException(
+					"No content type for: " + proto.getClass(), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+		return contentEnum;
+	}
+
+	static <T extends Message> ContentItem<T> convert(T proto) {
+		switch (getContentEnum(proto)) {
+			case STORY: return (ContentItem<T>) new Story((Turnstr.Story) proto);
+			case LIVE_VIDEO: return (ContentItem<T>) new LiveVideo((Turnstr.LiveVideo) proto);
+		}
+		return null;
+	}
 
 	long getId();
 

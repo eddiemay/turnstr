@@ -85,6 +85,7 @@ message ContentActivity {
   }
   int64 created_at = 5;
   int64 updated_at = 6;
+  int64 deleted_at = 7;
 }
 
 message Favorite {
@@ -93,6 +94,19 @@ message Favorite {
   int64 favorite_user_id = 3;
   int64 created_at = 4;
   int64 updated_at = 5;
+}
+
+message File {
+  int64 id = 1;
+  ContentType content_type = 2;
+  int64 content_id = 3;
+  int64 user_id = 4;
+  bytes data = 5;
+  string file_type = 6;
+  int32 file_size = 7;
+  int64 created_at = 10;
+  int64 updated_at = 11;
+  int64 deleted_at = 12;
 }
 
 message LiveVideo {
@@ -213,16 +227,13 @@ message Story {
   string caption = 3;
   ContentState state = 4;
   Visibility visibility = 5;
-  message File {
-    string file_name = 1;
-    string content_type = 2;
-    int32 file_size = 3;
-    int64 created_at = 4;
-    int64 updated_at = 5;
-  }
   message Face {
-    File media = 1;
-    File thumb = 2;
+    string content_type = 1;
+    int32 file_size = 2;
+    string url = 3;
+    bytes thumb = 4;
+    int64 created_at = 5;
+    int64 updated_at = 6;
   }
   repeated Face face = 6;
 
