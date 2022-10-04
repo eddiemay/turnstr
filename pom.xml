@@ -20,7 +20,7 @@
 
     <endpoints.framework.version>2.2.0</endpoints.framework.version>
     <endpoints.management.version>1.0.4</endpoints.management.version>
-    <google.protobuf.version>3.6.1</google.protobuf.version>
+    <google.protobuf.version>3.16.3</google.protobuf.version>
 
     <endpoints.project.id>fantasy-predictor</endpoints.project.id>
   </properties>
